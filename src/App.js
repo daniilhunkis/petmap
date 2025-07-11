@@ -8,9 +8,8 @@ import WelcomeSlides from "./components/WelcomeSlides";
 import Stories from "./components/Stories";
 import { logEvent } from "./metrics";
 
-// Константы для доступа к админке
 const ADMIN_USER_ID = 776430926;
-const ADMIN_PASSWORD = "petmap2024"; // Можно заменить
+const ADMIN_PASSWORD = "petmap2024"; // Можешь поменять пароль
 
 function AdminPanel({ onClose }) {
   return (
@@ -53,29 +52,25 @@ function App() {
   const [showAdminButton, setShowAdminButton] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Отладка: выводим всё, что есть в window.Telegram.WebApp.initDataUnsafe
   useEffect(() => {
+    // Проверяем Telegram WebApp и user_id
     if (
       window.Telegram &&
       window.Telegram.WebApp &&
-      window.Telegram.WebApp.initDataUnsafe
+      window.Telegram.WebApp.initDataUnsafe &&
+      window.Telegram.WebApp.initDataUnsafe.user
     ) {
-      console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
       const user = window.Telegram.WebApp.initDataUnsafe.user;
-      if (user) {
-        console.log("TG user:", user);
-        if (user.id === ADMIN_USER_ID) {
-          setShowAdminButton(true);
-        }
-      } else {
-        console.log("user не найден в initDataUnsafe");
+      console.log("TG user:", user); // отладка: покажет user в консоли
+      if (user && user.id === ADMIN_USER_ID) {
+        setShowAdminButton(true);
       }
     } else {
-      console.log("window.Telegram.WebApp.initDataUnsafe не найден");
+      // Покажи в консоли — для отладки, если не сработало
+      console.log("Админка скрыта — user_id не найден в Telegram WebApp");
     }
   }, []);
 
-  // Логируем каждый переход по разделам
   const handleNavigate = (to) => {
     logEvent("open_section", { section: to });
     setPage(to);
@@ -96,7 +91,7 @@ function App() {
     setIsAdmin(false);
   };
 
-  // Если в админке — показываем только её
+  // Если в админке — только админка, без основного интерфейса
   if (isAdmin) {
     return <AdminPanel onClose={handleAdminLogout} />;
   }
@@ -105,7 +100,7 @@ function App() {
     <div style={{ fontFamily: "Inter, sans-serif", background: "#f8f7ff", minHeight: "100vh", color: "#2d2a32" }}>
       <h1 style={{ textAlign: "center", color: "#4c38f2" }}>🐾 PetMap</h1>
 
-      {/* Кнопка админки (появляется только для тебя) */}
+      {/* Кнопка админки только для тебя */}
       {showAdminButton && (
         <button
           style={{
