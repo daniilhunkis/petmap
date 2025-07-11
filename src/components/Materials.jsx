@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { logEvent } from "../metrics";
 
-const API_URL = "https://petmap-backend.onrender.com/api/materials";
-
 const Materials = ({ onBack }) => {
-  const [materials, setMaterials] = useState([]);
   const [opened, setOpened] = useState(null);
+  const [materials, setMaterials] = useState([]);
 
   useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
+    fetch("https://petmap-backend.onrender.com/api/materials")
+      .then(r => r.json())
       .then(setMaterials);
   }, []);
 
