@@ -1,7 +1,34 @@
 import React, { useEffect, useRef, useState } from "react";
 
 const YMAPS_API_KEY = "590a209d-e5ce-4f23-bca5-27a57772be40";
-const PAW_ICON = "https://cdn-icons-png.flaticon.com/512/616/616408.png"; // замени на свою SVG лапы
+const PAW_ICON = "https://cdn-icons-png.flaticon.com/512/616/616408.png";
+
+const chipStyle = (active) => ({
+  background: active ? "#4c38f2" : "#fff",
+  color: active ? "#fff" : "#4c38f2",
+  border: "2px solid #4c38f2",
+  borderRadius: 22,
+  fontWeight: 700,
+  fontFamily: "Inter, sans-serif",
+  fontSize: 15,
+  minWidth: 136,
+  padding: "12px 19px",
+  boxShadow: "0 2px 10px #e0dfff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+  transition: "all .18s"
+});
+const soonStyle = {
+  marginLeft: 7,
+  background: "#f1e4ff",
+  color: "#a58ee9",
+  borderRadius: 8,
+  padding: "1px 7px",
+  fontSize: 12,
+  fontWeight: 600
+};
 
 function MapScreen({ onBack }) {
   const mapRef = useRef(null);
@@ -9,7 +36,6 @@ function MapScreen({ onBack }) {
   const [userCoords, setUserCoords] = useState(null);
   const [mapObject, setMapObject] = useState(null);
 
-  // Получение геолокации пользователя (точно)
   const handleGeolocate = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -18,7 +44,6 @@ function MapScreen({ onBack }) {
           setUserCoords(coords);
           if (mapObject) {
             mapObject.setCenter(coords, 14, { duration: 400 });
-            // Добавим маркер "Вы здесь"
             const userPlacemark = new window.ymaps.Placemark(coords, {
               iconCaption: "Вы здесь"
             }, {
@@ -33,7 +58,6 @@ function MapScreen({ onBack }) {
     }
   };
 
-  // Основная инициализация карты
   useEffect(() => {
     if (mapRef.current) mapRef.current.innerHTML = "";
     const scriptId = "yandex-maps-script";
@@ -45,7 +69,7 @@ function MapScreen({ onBack }) {
         const map = new window.ymaps.Map(mapRef.current, {
           center,
           zoom: 13,
-          controls: [], // Убираем все стандартные контролы!
+          controls: [],
           type: "yandex#map",
         });
         setMapObject(map);
@@ -61,8 +85,7 @@ function MapScreen({ onBack }) {
           map.geoObjects.add(userPlacemark);
         }
 
-        // Поиск ветклиник (через встроенный поиск Яндекса, либо вручную)
-        // Для MVP: ищем "ветеринарная клиника" вокруг центра карты
+        // Поиск ветклиник через Яндекс
         window.ymaps.geocode({
           kind: "biz",
           boundedBy: [
@@ -72,7 +95,7 @@ function MapScreen({ onBack }) {
           results: 80,
           query: "ветеринарная клиника"
         }).then(res => {
-          map.geoObjects.each(obj => map.geoObjects.remove(obj)); // очищаем старые маркеры
+          map.geoObjects.each(obj => map.geoObjects.remove(obj));
           if (userCoords) {
             const userPlacemark = new window.ymaps.Placemark(userCoords, {
               iconCaption: "Вы здесь"
@@ -155,7 +178,6 @@ function MapScreen({ onBack }) {
     // eslint-disable-next-line
   }, [filterOpen, userCoords]);
 
-  // Фиксируем body на всю высоту (чтобы не скроллилось)
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
@@ -183,83 +205,39 @@ function MapScreen({ onBack }) {
           right: 24,
           top: 24,
           background: "#fff",
-          borderRadius: 20,
+          borderRadius: 22,
           border: "2px solid #4c38f2",
           color: "#4c38f2",
           padding: "12px 24px",
           boxShadow: "0 2px 10px #e6e4f7",
           zIndex: 101,
           fontWeight: 700,
-          fontSize: 17,
-          display: "flex",
-          alignItems: "center"
+          fontFamily: "Inter, sans-serif"
         }}>
         <span role="img" aria-label="geo" style={{marginRight:8}}>📍</span> Геолокация
       </button>
-      {/* Кнопка "Открыто сейчас" */}
-      <button
-        onClick={() => setFilterOpen(o => !o)}
-        style={{
-          position: "absolute",
-          right: 24,
-          bottom: 96,
-          background: filterOpen ? "#4c38f2" : "#fff",
-          color: filterOpen ? "#fff" : "#4c38f2",
-          border: "2px solid #4c38f2",
-          borderRadius: 32,
-          boxShadow: "0 4px 22px #b9b5f33d",
-          padding: "13px 27px 13px 20px",
-          fontWeight: 700,
-          fontSize: 16,
-          zIndex: 101,
-          display: "flex",
-          alignItems: "center",
-          transition: "all 0.22s",
-        }}>
-        <span style={{
-          marginRight: 10,
-          fontWeight: 900,
-        }}>🔓</span> Открыто сейчас
-      </button>
-      {/* Кнопки "Передержка" и "Места для выгула" */}
+      {/* Горизонтальное меню чипсов */}
       <div style={{
         position: "absolute",
-        left: 24,
-        bottom: 100,
+        left: 0, right: 0, bottom: 86,
         display: "flex",
-        flexDirection: "column",
-        gap: 14,
-        zIndex: 101,
+        overflowX: "auto",
+        gap: 12,
+        padding: "0 16px",
+        zIndex: 102,
+        scrollbarWidth: "none"
       }}>
-        <button style={{
-          background:"#fff",
-          borderRadius:20,
-          border:"2px solid #bbb",
-          color:"#bbb",
-          padding:"12px 22px",
-          fontWeight:700,
-          fontSize:15,
-          boxShadow:"0 4px 16px #e6e4f7",
-          display: "flex", alignItems: "center"
-        }}>
-          🏨 Передержка <span style={{
-            marginLeft:7, background:"#f1e4ff", color:"#a58ee9", borderRadius:8, padding:"1px 7px", fontSize:12
-          }}>скоро</span>
+        <button style={chipStyle(filterOpen)} onClick={() => setFilterOpen(o => !o)}>
+          <span style={{ marginRight: 8 }}>🔓</span> Открыто сейчас
         </button>
-        <button style={{
-          background:"#fff",
-          borderRadius:20,
-          border:"2px solid #bbb",
-          color:"#bbb",
-          padding:"12px 22px",
-          fontWeight:700,
-          fontSize:15,
-          boxShadow:"0 4px 16px #e6e4f7",
-          display: "flex", alignItems: "center"
-        }}>
-          🌳 Места для выгула <span style={{
-            marginLeft:7, background:"#f1e4ff", color:"#a58ee9", borderRadius:8, padding:"1px 7px", fontSize:12
-          }}>скоро</span>
+        <button style={chipStyle(false)}>
+          🏨 Передержка <span style={soonStyle}>скоро</span>
+        </button>
+        <button style={chipStyle(false)}>
+          🌳 Места для выгула <span style={soonStyle}>скоро</span>
+        </button>
+        <button style={chipStyle(false)}>
+          💬 Консультации <span style={soonStyle}>скоро</span>
         </button>
       </div>
       {/* Кнопка "Назад" */}
@@ -272,9 +250,10 @@ function MapScreen({ onBack }) {
           background: "#fff",
           color: "#4c38f2",
           border: "2px solid #4c38f2",
-          borderRadius: 16,
+          borderRadius: 22,
           padding: "8px 32px",
           fontWeight: 700,
+          fontFamily: "Inter, sans-serif",
           fontSize: 17,
           boxShadow: "0 2px 10px #e6e4f7",
           cursor: "pointer",
