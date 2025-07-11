@@ -7,85 +7,92 @@ function MapScreen({ onBack }) {
   const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://api-maps.yandex.ru/2.1/?apikey=${YMAPS_API_KEY}&lang=ru_RU`;
-    script.type = "text/javascript";
-    script.onload = () => {
+    // Удаляем предыдущую карту (если есть)
+    if (mapRef.current) mapRef.current.innerHTML = "";
+    // Проверяем нет ли уже подключенного скрипта
+    const scriptId = "yandex-maps-script";
+    let script = document.getElementById(scriptId);
+
+    function initMap() {
       window.ymaps.ready(() => {
-        // По умолчанию центр Москва
-        let map = new window.ymaps.Map(mapRef.current, {
-          center: [55.751244, 37.618423],
+        // Центр по умолчанию
+        let defaultCenter = [55.751244, 37.618423];
+        // Создаём карту
+        const map = new window.ymaps.Map(mapRef.current, {
+          center: defaultCenter,
           zoom: 13,
           controls: ["zoomControl", "geolocationControl", "searchControl"],
         });
 
-        // Попробуем получить геолокацию пользователя и центрировать карту
+        // Ставим обработчик на геолокацию — центрируем карту
         map.controls.get('geolocationControl').events.add('locationchange', (e) => {
           const coords = e.get('geoObjects').get(0).geometry.getCoordinates();
           map.setCenter(coords, 14, { duration: 400 });
-          loadClinics(coords);
         });
 
-        // Если пользователь не дал разрешение, используем центр по умолчанию
-        loadClinics([55.751244, 37.618423]);
+        // Подключаем обработчик поиска (searchControl)
+        const searchControl = map.controls.get('searchControl');
+        searchControl.options.set('provider', 'yandex#search');
 
-        function loadClinics(centerCoords) {
-          // Удаляем старые маркеры (если есть)
-          map.geoObjects.removeAll();
-          // Добавляем геометку пользователя
-          map.geoObjects.add(new window.ymaps.GeoObject({
-            geometry: { type: "Point", coordinates: centerCoords },
-            properties: { iconCaption: "Вы здесь" }
-          }, {
-            preset: "islands#blueCircleDotIcon"
-          }));
+        // При поиске — фильтруем по открытым, выделяем маркеры
+        searchControl.events.add("resultshow", () => {
+          const results = searchControl.getResultsArray();
+          results.forEach(obj => {
+            const meta = obj.properties.get("CompanyMetaData");
+            if (meta && meta.Categories) {
+              // Проверяем, ветклиника ли
+              const isVet = meta.Categories.some(cat => 
+                /ветеринар|ветклиника|питомц|зоосалон/i.test(cat.name)
+              );
+              if (isVet) {
+                const hours = meta.Hours;
+                const isOpen = hours && hours.isCurrent;
+                if (filterOpen && !isOpen) return;
+                obj.options.set("preset", isOpen ? "islands#greenDotIcon" : "islands#grayDotIcon");
 
-          // Поиск ветклиник рядом
-          window.ymaps.geocode({
-            kind: "biz",
-            // Привязываем поиск к области вокруг пользователя
-            boundedBy: [
-              [centerCoords[0] - 0.1, centerCoords[1] - 0.2],
-              [centerCoords[0] + 0.1, centerCoords[1] + 0.2]
-            ],
-            results: 100,
-            query: "ветеринарная клиника"
-          }).then(res => {
-            res.geoObjects.each(obj => {
-              const meta = obj.properties.get("CompanyMetaData");
-              if (!meta) return;
-              const hours = meta.Hours;
-              const isOpen = hours && hours.isCurrent;
-              if (filterOpen && !isOpen) return;
-
-              // Рейтинг и отзывы
-              const rating = meta.Ratings && meta.Ratings[0] && meta.Ratings[0].value;
-              const reviews = meta.Reviews && meta.Reviews[0] && meta.Reviews[0].text;
-
-              obj.options.set("preset", isOpen ? "islands#greenDotIcon" : "islands#grayDotIcon");
-              let balloonContent = `<b>${meta.name}</b><br/>${meta.address}`;
-              if (hours) {
-                balloonContent += `<br/><b>${isOpen ? "🟢 Открыто сейчас" : "🔴 Закрыто"}</b> (${hours.text})`;
+                let balloonContent = `<b>${meta.name}</b><br/>${meta.address}`;
+                if (hours) {
+                  balloonContent += `<br/><b>${isOpen ? "🟢 Открыто сейчас" : "🔴 Закрыто"}</b> (${hours.text})`;
+                }
+                if (meta.Ratings && meta.Ratings[0]) {
+                  balloonContent += `<br/>⭐️ <b>${meta.Ratings[0].value}</b>`;
+                }
+                if (meta.Phones && meta.Phones.length) {
+                  balloonContent += `<br/>☎️ ${meta.Phones.map((p) => p.formatted).join(", ")}`;
+                }
+                if (meta.Reviews && meta.Reviews[0]) {
+                  balloonContent += `<br/><i>“${meta.Reviews[0].text.slice(0, 120)}...”</i>`;
+                }
+                obj.properties.set("balloonContent", balloonContent);
               }
-              if (rating) {
-                balloonContent += `<br/>⭐️ <b>${rating}</b>`;
-              }
-              if (meta.Phones && meta.Phones.length) {
-                balloonContent += `<br/>☎️ ${meta.Phones.map((p) => p.formatted).join(", ")}`;
-              }
-              if (reviews) {
-                balloonContent += `<br/><i>“${reviews.slice(0, 120)}...”</i>`;
-              }
-              obj.properties.set("balloonContent", balloonContent);
-              map.geoObjects.add(obj);
-            });
+            }
           });
-        }
+        });
+
+        // При загрузке сразу ищем "ветеринарная клиника"
+        searchControl.search("ветеринарная клиника");
       });
-    };
-    document.body.appendChild(script);
+    }
+
+    // Если скрипта нет, добавляем
+    if (!script) {
+      script = document.createElement("script");
+      script.src = `https://api-maps.yandex.ru/2.1/?apikey=${YMAPS_API_KEY}&lang=ru_RU`;
+      script.type = "text/javascript";
+      script.id = scriptId;
+      script.onload = initMap;
+      document.body.appendChild(script);
+    } else {
+      if (window.ymaps && window.ymaps.ready) {
+        initMap();
+      } else {
+        script.onload = initMap;
+      }
+    }
+
+    // cleanup
     return () => {
-      document.body.removeChild(script);
+      if (mapRef.current) mapRef.current.innerHTML = "";
     };
   }, [filterOpen]);
 
@@ -106,8 +113,9 @@ function MapScreen({ onBack }) {
       <div ref={mapRef} style={{ width: "100%", height: "65vh", borderRadius: 18, boxShadow: "0 2px 14px #e6e4f7" }} />
       <button onClick={onBack} style={{ marginTop: 16 }}>Назад</button>
       <p style={{ color: "#999", marginTop: 10, fontSize: 13 }}>
-        Позволяет искать клиники рядом, видеть рейтинг, отзывы, расписание.<br />
-        Яркие метки — открытые, тусклые — закрытые. Кликните для подробностей.
+        Центрируется по тебе, ищет ветклиники через поиск Яндекса.<br />
+        Яркие метки — открытые, тусклые — закрытые.<br />
+        Можно искать по любому адресу или вручную в поиске!
       </p>
     </div>
   );
