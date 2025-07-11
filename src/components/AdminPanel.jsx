@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BACKEND_URL } from "../config"; // если вынесешь url в config.js
+import { BACKEND_URL } from "../config";
 
 function TabButton({ active, onClick, children }) {
   return (
@@ -31,7 +31,7 @@ function AdminPanel() {
   const [matForm, setMatForm] = useState({ title: "", img: "", text: "" });
   const [storyForm, setStoryForm] = useState({ title: "", img: "", url: "" });
 
-  // Загрузка существующих материалов/сторис
+  // Загрузка материалов/сторис
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/materials`).then(r => r.json()).then(setMaterials);
     fetch(`${BACKEND_URL}/api/stories`).then(r => r.json()).then(setStories);
