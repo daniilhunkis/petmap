@@ -1,36 +1,27 @@
 import React, { useState, useEffect } from "react";
 import StoriesLib from "react-insta-stories";
 
-const API_URL = "https://petmap-backend.onrender.com/api/stories";
-
 export default function Stories() {
-  const [stories, setStories] = useState([]);
   const [show, setShow] = useState(false);
+  const [storiesData, setStoriesData] = useState([]);
 
   useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => {
-        setStories(data.map(s => ({
-          url: s.url,
-          header: {
-            heading: s.title,
-            subheading: "PetMap",
-            profileImage: s.img,
-          },
-        })));
-      });
+    fetch("https://petmap-backend.onrender.com/api/stories")
+      .then(r => r.json())
+      .then(setStoriesData);
   }, []);
+
+  if (storiesData.length === 0) return null;
 
   return (
     <div style={{ padding: "20px 0 8px 16px", display: "flex", alignItems: "center" }}>
-      {stories.map((s, i) => (
+      {storiesData.map((s, i) => (
         <div key={i} style={{
           border: `3.3px solid #4c38f2`,
           borderRadius: "50%", width: 63, height: 63, overflow: "hidden",
           marginRight: 12, cursor: "pointer"
         }} onClick={() => setShow(true)}>
-          <img src={s.header.profileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={s.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       ))}
       {show && (
@@ -39,7 +30,10 @@ export default function Stories() {
           background: "#2227", zIndex: 400
         }}>
           <StoriesLib
-            stories={stories}
+            stories={storiesData.map(story => ({
+              url: story.url,
+              header: { heading: story.title, subheading: "PetMap", profileImage: story.img }
+            }))}
             defaultInterval={4800}
             width={"100vw"}
             height={"100vh"}
