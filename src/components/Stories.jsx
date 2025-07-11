@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from "react";
 import StoriesLib from "react-insta-stories";
-import { BACKEND_URL } from "../config";
+
+const API_URL = "https://petmap-backend.onrender.com/api/stories";
 
 export default function Stories() {
-  const [show, setShow] = useState(false);
   const [stories, setStories] = useState([]);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/stories`)
-      .then(r => r.json())
+    fetch(API_URL)
+      .then(res => res.json())
       .then(data => {
-        setStories(
-          data.map(story => ({
-            url: story.url,
-            header: {
-              heading: story.title,
-              subheading: "PetMap",
-              profileImage: story.img
-            }
-          }))
-        );
+        setStories(data.map(s => ({
+          url: s.url,
+          header: {
+            heading: s.title,
+            subheading: "PetMap",
+            profileImage: s.img,
+          },
+        })));
       });
   }, []);
 
