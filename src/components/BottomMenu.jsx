@@ -1,13 +1,10 @@
 import React from "react";
-// Используй emoji или импортируй SVG
-
 const menuItems = [
-  { key: "materials", icon: "📚", label: "Материалы" },
+  { key: "main", icon: "🏠", label: "Главная" },
   { key: "map", icon: "🗺️", label: "Карта" },
   { key: "consult", icon: "💬", label: "Консультации", soon: true },
   { key: "feedback", icon: "✉️", label: "Связаться" },
 ];
-
 function BottomMenu({ active, onSelect }) {
   return (
     <div style={{
@@ -40,5 +37,4 @@ function BottomMenu({ active, onSelect }) {
     </div>
   );
 }
-
 export default BottomMenu;
