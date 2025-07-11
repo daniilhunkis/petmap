@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { logEvent } from "../metrics";
-import { BACKEND_URL } from "../config";
+
+const API_URL = "https://petmap-backend.onrender.com/api/materials";
 
 const Materials = ({ onBack }) => {
-  const [opened, setOpened] = useState(null);
   const [materials, setMaterials] = useState([]);
+  const [opened, setOpened] = useState(null);
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/materials`)
-      .then(r => r.json())
+    fetch(API_URL)
+      .then(res => res.json())
       .then(setMaterials);
   }, []);
 
@@ -24,7 +25,7 @@ const Materials = ({ onBack }) => {
         <ul style={{ padding: 0, listStyle: "none" }}>
           {materials.map((mat, i) => (
             <li
-              key={mat.id}
+              key={i}
               onClick={() => handleOpenMaterial(i)}
               style={{
                 background: "#fff",
