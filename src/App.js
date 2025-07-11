@@ -1,62 +1,97 @@
 import React, { useState } from "react";
-import MainMenu from "./components/MainMenu";
+import BottomMenu from "./components/BottomMenu";
 import MapScreen from "./components/MapScreen";
 import Materials from "./components/Materials";
 import FeedbackForm from "./components/FeedbackForm";
 import ComingSoon from "./components/ComingSoon";
 import WelcomeSlides from "./components/WelcomeSlides";
 import Stories from "./components/Stories";
-import AdminPanel from "./components/AdminPanel"; // смотри ниже
 
-import { logEvent } from "./metrics";
+// Флаг обучалки (localStorage)
+const WELCOME_KEY = "petmap_welcome_seen";
 
 function App() {
-  const [page, setPage] = useState("welcome");
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Страница: main, map, materials, consult, feedback
+  const [page, setPage] = useState("main");
+  const [showWelcome, setShowWelcome] = useState(
+    !localStorage.getItem(WELCOME_KEY)
+  );
 
-  // "секретный" способ входа в админку — по урлу + паролю
-  React.useEffect(() => {
-    if (window.location.pathname === "/admin" || window.location.hash === "#/admin") {
-      // Можно сделать автологин из localStorage
-      if (window.localStorage.getItem("isAdmin") === "yes") setIsAdmin(true);
-      else {
-        const password = window.prompt("Введите пароль для входа в админку:");
-        if (password === "petmap2024") {
-          setIsAdmin(true);
-          window.localStorage.setItem("isAdmin", "yes");
-        } else {
-          alert("Неверный пароль!");
-          window.location.replace("/"); // редирект на главную
-        }
-      }
-    }
-  }, []);
-
-  const handleNavigate = (to) => {
-    logEvent("open_section", { section: to });
-    setPage(to);
+  // После обучалки
+  const handleWelcomeDone = () => {
+    setShowWelcome(false);
+    localStorage.setItem(WELCOME_KEY, "1");
   };
 
-  if (isAdmin) {
-    return <AdminPanel onClose={() => { setIsAdmin(false); window.location.replace("/"); }} />;
-  }
-
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", background: "#f8f7ff", minHeight: "100vh", color: "#2d2a32" }}>
-      <h1 style={{ textAlign: "center", color: "#4c38f2" }}>🐾 PetMap</h1>
-      {page === "welcome" && <WelcomeSlides onDone={() => handleNavigate("main")} />}
-      {page === "main" && (
+    <div style={{ background: "#f8f7ff", minHeight: "100vh" }}>
+      {/* Обучалка только для первого входа */}
+      {showWelcome ? (
+        <WelcomeSlides onDone={handleWelcomeDone} />
+      ) : (
         <>
-          <Stories />
-          <MainMenu onNavigate={handleNavigate} />
+          {page === "main" && (
+            <>
+              {/* Сторисы */}
+              <Stories />
+
+              {/* Кнопка На карту */}
+              <button
+                onClick={() => setPage("map")}
+                style={{
+                  background: "#4c38f2",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 18,
+                  padding: "16px 0",
+                  fontWeight: 800,
+                  fontSize: 20,
+                  width: "93%",
+                  margin: "20px 3.5%",
+                  marginBottom: 12,
+                  boxShadow: "0 4px 18px #e0dfff",
+                  letterSpacing: 0.3,
+                  cursor: "pointer"
+                }}>
+                🗺️ Открыть карту ветклиник
+              </button>
+
+              {/* Полезные материалы */}
+              <h3 style={{ color: "#4c38f2", fontWeight: 700, margin: "0 0 12px 22px" }}>
+                Полезные материалы
+              </h3>
+              <div style={{
+                display: "flex", flexWrap: "wrap", gap: 18, padding: "0 13px 76px 13px"
+              }}>
+                {/* Материалы — пример статей, заменишь потом из админки */}
+                <div style={{
+                  background: "#fff", borderRadius: 17, boxShadow: "0 1px 12px #edeafd",
+                  width: 160, minHeight: 135, overflow: "hidden"
+                }}>
+                  <img src="https://placekitten.com/160/85" alt="" style={{
+                    width: "100%", height: 85, objectFit: "cover"
+                  }} />
+                  <div style={{
+                    padding: "7px 10px", fontWeight: 600, fontSize: 14, color: "#4c38f2"
+                  }}>
+                    Клещи и защита летом
+                  </div>
+                </div>
+                {/* Добавь ещё превью статей аналогично */}
+              </div>
+            </>
+          )}
+          {page === "map" && <MapScreen onBack={() => setPage("main")} />}
+          {page === "materials" && <Materials onBack={() => setPage("main")} />}
+          {page === "feedback" && <FeedbackForm onBack={() => setPage("main")} />}
+          {page === "consult" && (
+            <ComingSoon title="💬 Консультации (скоро)" onBack={() => setPage("main")} />
+          )}
+
+          {/* Нижнее меню */}
+          <BottomMenu active={page === "main" ? "materials" : page} onSelect={setPage} />
         </>
       )}
-      {page === "map" && <MapScreen onBack={() => handleNavigate("main")} />}
-      {page === "materials" && <Materials onBack={() => handleNavigate("main")} />}
-      {page === "feedback" && <FeedbackForm onBack={() => handleNavigate("main")} />}
-      {page === "consult" && <ComingSoon title="💬 Консультации" onBack={() => handleNavigate("main")} />}
-      {page === "hotel" && <ComingSoon title="🐶 Передержка" onBack={() => handleNavigate("main")} />}
-      {page === "parks" && <ComingSoon title="🌳 Места для выгула" onBack={() => handleNavigate("main")} />}
     </div>
   );
 }
