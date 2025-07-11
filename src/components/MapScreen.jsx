@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const YMAPS_API_KEY = "56e693f3-8a78-4f40-8053-7686454871d5";
+const YMAPS_API_KEY = "94cfe915-89dd-449b-a556-1c69bd78c838";
 const PAW_ICON = "https://cdn-icons-png.flaticon.com/512/616/616408.png";
 
 const chipStyle = (active) => ({
