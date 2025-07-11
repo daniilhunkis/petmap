@@ -1,31 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { logEvent } from "../metrics";
-
-const materials = [
-  {
-    title: "Как выбрать ветклинику?",
-    text: "Выбирайте клинику с хорошими отзывами, современным оборудованием и опытными специалистами. Всегда обращайте внимание на чистоту и атмосферу в помещении. Не стесняйтесь задавать вопросы врачу!"
-  },
-  {
-    title: "Календарь прививок для собак и кошек",
-    text: "1. Первая прививка — 2 месяца\n2. Вторая — 3 месяца\n3. Ежегодные повторные прививки — раз в год\n(Подробности уточняйте у ветеринара)"
-  },
-  {
-    title: "Первая помощь при отравлении",
-    text: "Если ваш питомец отравился: 1) Не давайте еду и воду. 2) Срочно обратитесь в клинику. 3) Не пытайтесь лечить самостоятельно. Запомните симптомы (рвота, слабость, судороги)."
-  },
-  {
-    title: "Что положить в аптечку для питомца",
-    text: "Стерильные салфетки, бинт, перекись водорода, активированный уголь, средства от клещей, телефон круглосуточной ветклиники."
-  },
-  {
-    title: "Правила выгула в городе",
-    text: "Используйте поводок и намордник, убирайте за питомцем, уважайте других людей и животных. Помните о правилах выгула в вашем городе."
-  }
-];
+import { BACKEND_URL } from "../config";
 
 const Materials = ({ onBack }) => {
   const [opened, setOpened] = useState(null);
+  const [materials, setMaterials] = useState([]);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/materials`)
+      .then(r => r.json())
+      .then(setMaterials);
+  }, []);
 
   const handleOpenMaterial = (i) => {
     logEvent("open_material", { index: i, title: materials[i].title });
@@ -39,7 +24,7 @@ const Materials = ({ onBack }) => {
         <ul style={{ padding: 0, listStyle: "none" }}>
           {materials.map((mat, i) => (
             <li
-              key={i}
+              key={mat.id}
               onClick={() => handleOpenMaterial(i)}
               style={{
                 background: "#fff",
