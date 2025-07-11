@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { BACKEND_URL } from "../config"; // если вынесешь url в config.js
 
 function TabButton({ active, onClick, children }) {
   return (
@@ -32,14 +33,14 @@ function AdminPanel() {
 
   // Загрузка существующих материалов/сторис
   useEffect(() => {
-    fetch("/api/materials").then(r => r.json()).then(setMaterials);
-    fetch("/api/stories").then(r => r.json()).then(setStories);
+    fetch(`${BACKEND_URL}/api/materials`).then(r => r.json()).then(setMaterials);
+    fetch(`${BACKEND_URL}/api/stories`).then(r => r.json()).then(setStories);
   }, []);
 
   // Добавить статью
   const handleAddMaterial = (e) => {
     e.preventDefault();
-    fetch("/api/materials", {
+    fetch(`${BACKEND_URL}/api/materials`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(matForm)
@@ -51,7 +52,7 @@ function AdminPanel() {
   // Добавить сторис
   const handleAddStory = (e) => {
     e.preventDefault();
-    fetch("/api/stories", {
+    fetch(`${BACKEND_URL}/api/stories`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(storyForm)
@@ -62,12 +63,12 @@ function AdminPanel() {
 
   // Удаление
   const handleDelMat = (id) => {
-    fetch(`/api/materials/${id}`, { method: "DELETE" }).then(() =>
+    fetch(`${BACKEND_URL}/api/materials/${id}`, { method: "DELETE" }).then(() =>
       setMaterials(materials.filter(m => m.id !== id))
     );
   };
   const handleDelStory = (id) => {
-    fetch(`/api/stories/${id}`, { method: "DELETE" }).then(() =>
+    fetch(`${BACKEND_URL}/api/stories/${id}`, { method: "DELETE" }).then(() =>
       setStories(stories.filter(s => s.id !== id))
     );
   };
@@ -86,7 +87,7 @@ function AdminPanel() {
             <input placeholder="Заголовок" value={matForm.title} onChange={e => setMatForm(f => ({ ...f, title: e.target.value }))} required style={{ marginRight: 8, padding: 8, borderRadius: 8 }} />
             <input placeholder="Картинка (URL)" value={matForm.img} onChange={e => setMatForm(f => ({ ...f, img: e.target.value }))} required style={{ marginRight: 8, padding: 8, borderRadius: 8 }} />
             <input placeholder="Текст (коротко)" value={matForm.text} onChange={e => setMatForm(f => ({ ...f, text: e.target.value }))} required style={{ marginRight: 8, padding: 8, borderRadius: 8, width: 220 }} />
-            <button type="submit" style={{ ...chipStyle(true), padding: "8px 20px", marginLeft: 8 }}>Добавить</button>
+            <button type="submit" style={{ background: "#4c38f2", color: "#fff", borderRadius: 8, padding: "8px 20px", marginLeft: 8 }}>Добавить</button>
           </form>
           <div>
             {materials.map(mat => (
@@ -115,7 +116,7 @@ function AdminPanel() {
             <input placeholder="Заголовок" value={storyForm.title} onChange={e => setStoryForm(f => ({ ...f, title: e.target.value }))} required style={{ marginRight: 8, padding: 8, borderRadius: 8 }} />
             <input placeholder="Картинка (URL)" value={storyForm.img} onChange={e => setStoryForm(f => ({ ...f, img: e.target.value }))} required style={{ marginRight: 8, padding: 8, borderRadius: 8 }} />
             <input placeholder="Ссылка (фото/видео)" value={storyForm.url} onChange={e => setStoryForm(f => ({ ...f, url: e.target.value }))} required style={{ marginRight: 8, padding: 8, borderRadius: 8, width: 200 }} />
-            <button type="submit" style={{ ...chipStyle(true), padding: "8px 20px", marginLeft: 8 }}>Добавить</button>
+            <button type="submit" style={{ background: "#4c38f2", color: "#fff", borderRadius: 8, padding: "8px 20px", marginLeft: 8 }}>Добавить</button>
           </form>
           <div>
             {stories.map(story => (
