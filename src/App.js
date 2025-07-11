@@ -10,7 +10,7 @@ import { logEvent } from "./metrics";
 
 // Константы для доступа к админке
 const ADMIN_USER_ID = 776430926;
-const ADMIN_PASSWORD = "petmap2024"; // Можешь поменять пароль
+const ADMIN_PASSWORD = "petmap2024"; // Можно заменить
 
 function AdminPanel({ onClose }) {
   return (
@@ -44,7 +44,6 @@ function AdminPanel({ onClose }) {
       </button>
       <h2>Админка PetMap</h2>
       <p>Здесь будет таблица метрик, обратной связи и управление материалами/сторисами.</p>
-      {/* Таблицы, формы, экспорт и прочее — потом */}
     </div>
   );
 }
@@ -54,18 +53,25 @@ function App() {
   const [showAdminButton, setShowAdminButton] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Проверяем user_id в Telegram Mini App
+  // Отладка: выводим всё, что есть в window.Telegram.WebApp.initDataUnsafe
   useEffect(() => {
     if (
       window.Telegram &&
       window.Telegram.WebApp &&
-      window.Telegram.WebApp.initDataUnsafe &&
-      window.Telegram.WebApp.initDataUnsafe.user
+      window.Telegram.WebApp.initDataUnsafe
     ) {
+      console.log("initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
       const user = window.Telegram.WebApp.initDataUnsafe.user;
-      if (user && user.id === ADMIN_USER_ID) {
-        setShowAdminButton(true);
+      if (user) {
+        console.log("TG user:", user);
+        if (user.id === ADMIN_USER_ID) {
+          setShowAdminButton(true);
+        }
+      } else {
+        console.log("user не найден в initDataUnsafe");
       }
+    } else {
+      console.log("window.Telegram.WebApp.initDataUnsafe не найден");
     }
   }, []);
 
