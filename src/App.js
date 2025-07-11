@@ -7,44 +7,47 @@ import ComingSoon from "./components/ComingSoon";
 import WelcomeSlides from "./components/WelcomeSlides";
 import Stories from "./components/Stories";
 
-// Флаг обучалки (localStorage)
 const WELCOME_KEY = "petmap_welcome_seen";
-
 function App() {
-  // Страница: main, map, materials, consult, feedback
   const [page, setPage] = useState("main");
   const [showWelcome, setShowWelcome] = useState(
     !localStorage.getItem(WELCOME_KEY)
   );
-
-  // После обучалки
   const handleWelcomeDone = () => {
     setShowWelcome(false);
     localStorage.setItem(WELCOME_KEY, "1");
   };
-
   return (
     <div style={{ background: "#f8f7ff", minHeight: "100vh" }}>
-      {/* Обучалка только для первого входа */}
+      {/* Обучалка на весь экран */}
       {showWelcome ? (
-        <WelcomeSlides onDone={handleWelcomeDone} />
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, width: "100vw", height: "100vh",
+          zIndex: 500,
+          background: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center"
+        }}>
+          <WelcomeSlides onDone={handleWelcomeDone} />
+        </div>
       ) : (
         <>
           {page === "main" && (
             <>
-              {/* Сторисы */}
               <Stories />
-
-              {/* Кнопка На карту */}
               <button
                 onClick={() => setPage("map")}
                 style={{
                   background: "#4c38f2",
                   color: "#fff",
                   border: "none",
-                  borderRadius: 18,
+                  borderRadius: 22,
                   padding: "16px 0",
                   fontWeight: 800,
+                  fontFamily: "Inter, sans-serif",
                   fontSize: 20,
                   width: "93%",
                   margin: "20px 3.5%",
@@ -55,29 +58,28 @@ function App() {
                 }}>
                 🗺️ Открыть карту ветклиник
               </button>
-
-              {/* Полезные материалы */}
               <h3 style={{ color: "#4c38f2", fontWeight: 700, margin: "0 0 12px 22px" }}>
                 Полезные материалы
               </h3>
               <div style={{
                 display: "flex", flexWrap: "wrap", gap: 18, padding: "0 13px 76px 13px"
               }}>
-                {/* Материалы — пример статей, заменишь потом из админки */}
+                {/* Пример статей */}
                 <div style={{
-                  background: "#fff", borderRadius: 17, boxShadow: "0 1px 12px #edeafd",
+                  background: "#fff", borderRadius: 22, boxShadow: "0 1px 12px #edeafd",
                   width: 160, minHeight: 135, overflow: "hidden"
                 }}>
                   <img src="https://placekitten.com/160/85" alt="" style={{
                     width: "100%", height: 85, objectFit: "cover"
                   }} />
                   <div style={{
-                    padding: "7px 10px", fontWeight: 600, fontSize: 14, color: "#4c38f2"
+                    padding: "7px 10px", fontWeight: 600, fontSize: 14, color: "#4c38f2",
+                    fontFamily: "Inter, sans-serif"
                   }}>
                     Клещи и защита летом
                   </div>
                 </div>
-                {/* Добавь ещё превью статей аналогично */}
+                {/* Ещё статьи добавь по аналогии */}
               </div>
             </>
           )}
@@ -87,13 +89,11 @@ function App() {
           {page === "consult" && (
             <ComingSoon title="💬 Консультации (скоро)" onBack={() => setPage("main")} />
           )}
-
-          {/* Нижнее меню */}
-          <BottomMenu active={page === "main" ? "materials" : page} onSelect={setPage} />
+          {/* BottomMenu везде кроме welcome */}
+          <BottomMenu active={page} onSelect={setPage} />
         </>
       )}
     </div>
   );
 }
-
 export default App;
