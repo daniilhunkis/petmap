@@ -1,23 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import StoriesLib from "react-insta-stories";
-
-const storiesData = [
-  {
-    url: "https://placekitten.com/400/700",
-    header: { heading: "Лето с питомцем", subheading: "PetMap", profileImage: "https://placekitten.com/120/120" }
-  },
-  {
-    url: "https://placekitten.com/410/710",
-    header: { heading: "Что делать при жаре", subheading: "PetMap", profileImage: "https://placekitten.com/122/120" }
-  }
-];
+import { BACKEND_URL } from "../config";
 
 export default function Stories() {
   const [show, setShow] = useState(false);
+  const [stories, setStories] = useState([]);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/stories`)
+      .then(r => r.json())
+      .then(data => {
+        setStories(
+          data.map(story => ({
+            url: story.url,
+            header: {
+              heading: story.title,
+              subheading: "PetMap",
+              profileImage: story.img
+            }
+          }))
+        );
+      });
+  }, []);
 
   return (
     <div style={{ padding: "20px 0 8px 16px", display: "flex", alignItems: "center" }}>
-      {storiesData.map((s, i) => (
+      {stories.map((s, i) => (
         <div key={i} style={{
           border: `3.3px solid #4c38f2`,
           borderRadius: "50%", width: 63, height: 63, overflow: "hidden",
@@ -32,7 +40,7 @@ export default function Stories() {
           background: "#2227", zIndex: 400
         }}>
           <StoriesLib
-            stories={storiesData}
+            stories={stories}
             defaultInterval={4800}
             width={"100vw"}
             height={"100vh"}
