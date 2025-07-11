@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+const BACKEND_URL = "https://petmap-backend.onrender.com"; // ← тот же адрес
+
 const FeedbackForm = ({ onBack }) => {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
@@ -15,7 +17,7 @@ const FeedbackForm = ({ onBack }) => {
       time: new Date().toISOString()
     };
     try {
-      await fetch("http://localhost:8000/api/feedback", {
+      await fetch(`${BACKEND_URL}/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
