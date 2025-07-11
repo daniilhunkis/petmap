@@ -1,12 +1,10 @@
 // src/metrics.js
+import { BACKEND_URL } from "./api"; 
 
-export function logEvent(event, details = {}) {
-  const time = new Date().toISOString();
-  const payload = { event, time, ...details };
-  fetch("http://localhost:8000/api/metrics", {
+export function logEvent(event, info) {
+  fetch(`${BACKEND_URL}/metrics`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  }).catch(() => {});
-  console.log("[METRIC]", payload);
+    body: JSON.stringify({ event, info }),
+  });
 }
